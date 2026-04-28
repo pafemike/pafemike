@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Aiyedrix · Knowledge Base</title>
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/app.css" />
+</head>
+<body class="app">
+  <div class="app-shell" data-page="knowledge" data-base="../">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="workspace">
+      <header class="topbar">
+        <button class="icon-btn sidebar-toggle" data-toggle="sidebar" aria-label="Toggle sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="crumbs"><a href="../app.html">Home</a><span> / </span><span>Knowledge Base</span></div>
+        <div class="topbar-right"><button class="btn btn-primary btn-sm">+ Upload</button></div>
+      </header>
+
+      <div class="content">
+        <section class="welcome">
+          <div>
+            <h1>Knowledge Base</h1>
+            <p class="muted">Everything Aiyedrix uses to ground its answers — your story, the company's, and the world's.</p>
+          </div>
+        </section>
+
+        <section class="cards-grid">
+          <article class="card profile-card"><h3>📄 Resume</h3><p class="muted">peter-aiyede-2026.pdf · 2 pages</p></article>
+          <article class="card profile-card"><h3>📑 Past project briefs</h3><p class="muted">12 docs indexed</p></article>
+          <article class="card profile-card"><h3>🏢 Company research</h3><p class="muted">Stripe · Meta · OpenAI · Notion</p></article>
+          <article class="card profile-card"><h3>📐 Frameworks</h3><p class="muted">STAR · CIRCLES · MECE · CAP · Trade-offs</p></article>
+          <article class="card profile-card"><h3>📊 Metrics library</h3><p class="muted">Your impact numbers, ready to drop in.</p></article>
+          <article class="card profile-card"><h3>🧪 Custom snippets</h3><p class="muted">7 saved STAR stories</p></article>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/js/app.js"></script>
+</body>
+</html>

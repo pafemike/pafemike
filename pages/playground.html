@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Aiyedrix · Playground</title>
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/app.css" />
+</head>
+<body class="app">
+  <div class="app-shell" data-page="playground" data-base="../">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="workspace">
+      <header class="topbar">
+        <button class="icon-btn sidebar-toggle" data-toggle="sidebar" aria-label="Toggle sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="crumbs"><a href="../app.html">Home</a><span> / </span><span>Playground</span></div>
+      </header>
+
+      <div class="content">
+        <section class="welcome">
+          <div>
+            <h1>Playground</h1>
+            <p class="muted">Drop in a question — get an Aiyedrix-style answer instantly. No call needed.</p>
+          </div>
+        </section>
+
+        <section class="card panel">
+          <label class="field full"><span>Question</span>
+            <textarea id="pgQ" rows="3" placeholder="Paste any interview question…">Tell me about a time you led a project under tight deadlines.</textarea>
+          </label>
+          <div class="panel-foot">
+            <div class="seg">
+              <button class="seg-btn active" data-len="short">Short</button>
+              <button class="seg-btn" data-len="full">Full</button>
+              <button class="seg-btn" data-len="bullets">Bullets</button>
+            </div>
+            <button class="btn btn-primary btn-sm" id="pgGo">Generate answer</button>
+          </div>
+        </section>
+
+        <section class="card panel">
+          <header class="panel-head"><h3>Aiyedrix answer</h3></header>
+          <div id="pgOut" class="answer">
+            <p><b>STAR — Q4 Acme launch</b></p>
+            <ul>
+              <li><b>Situation:</b> Cross-team checkout rewrite, 2-week runway.</li>
+              <li><b>Task:</b> Own delivery without slipping scope.</li>
+              <li><b>Action:</b> Parallelized risk burn-down, daily 10-min stand-ups.</li>
+              <li><b>Result:</b> Shipped 3 days early, latency -38%, conversion +12%.</li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/js/app.js"></script>
+  <script>
+    const sample = {
+      short: '<p>Led the Q4 Acme checkout rewrite. Shipped 3 days early, latency -38%, conversion +12%.</p>',
+      full: '<p><b>STAR — Q4 Acme launch</b></p><p>The team was rebuilding checkout under a 2-week runway with 4 engineers blocked. I owned delivery, parallelized risk burn-down, ran 10-min daily stand-ups with the SRE lead, and shipped 3 days early. Latency dropped 38% and conversion lifted 12% with zero rollback.</p>',
+      bullets: '<ul><li>Owned a 2-week checkout rewrite at Acme</li><li>Unblocked 4 engineers via daily 10-min stand-ups</li><li>Shipped 3 days early</li><li>Latency -38%, conversion +12%, zero rollback</li></ul>'
+    };
+    const segs = document.querySelectorAll('.seg-btn');
+    let mode = 'short';
+    segs.forEach(b => b.addEventListener('click', () => { segs.forEach(x=>x.classList.remove('active')); b.classList.add('active'); mode = b.dataset.len; }));
+    document.getElementById('pgGo').addEventListener('click', () => {
+      const out = document.getElementById('pgOut');
+      out.style.opacity = .4;
+      setTimeout(() => { out.innerHTML = sample[mode]; out.style.opacity = 1; }, 350);
+    });
+  </script>
+</body>
+</html>

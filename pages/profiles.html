@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Aiyedrix · Interview Profiles</title>
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/app.css" />
+</head>
+<body class="app">
+  <div class="app-shell" data-page="profiles" data-base="../">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="workspace">
+      <header class="topbar">
+        <button class="icon-btn sidebar-toggle" data-toggle="sidebar" aria-label="Toggle sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="crumbs"><a href="../app.html">Home</a><span> / </span><span>Interview Profiles</span></div>
+        <div class="topbar-right"><button class="btn btn-primary btn-sm">+ New profile</button></div>
+      </header>
+
+      <div class="content">
+        <section class="welcome">
+          <div>
+            <h1>Interview Profiles</h1>
+            <p class="muted">One profile per role you're targeting. Aiyedrix uses these to personalize every answer.</p>
+          </div>
+        </section>
+
+        <section class="cards-grid">
+          <article class="card profile-card">
+            <header class="profile-mini">
+              <div class="avatar">PA</div>
+              <div><b>Senior Backend Engineer</b><small class="muted">Stripe · Meta · OpenAI</small></div>
+            </header>
+            <ul class="kv">
+              <li><span>Resume</span><b>peter-aiyede-2026.pdf</b></li>
+              <li><span>Years</span><b>8</b></li>
+              <li><span>Top stack</span><b>Go, Python, Postgres, Kafka</b></li>
+              <li><span>Language</span><b>English (US)</b></li>
+            </ul>
+            <footer class="panel-foot">
+              <button class="btn btn-ghost btn-sm">Edit</button>
+              <button class="btn btn-ghost btn-sm">Duplicate</button>
+              <button class="btn btn-ghost btn-sm danger">Delete</button>
+            </footer>
+          </article>
+
+          <article class="card profile-card">
+            <header class="profile-mini">
+              <div class="avatar alt">PA</div>
+              <div><b>Staff Product Manager</b><small class="muted">Meta · Notion</small></div>
+            </header>
+            <ul class="kv">
+              <li><span>Resume</span><b>peter-aiyede-pm.pdf</b></li>
+              <li><span>Years</span><b>6</b></li>
+              <li><span>Domain</span><b>Fintech, Growth</b></li>
+              <li><span>Language</span><b>English (US)</b></li>
+            </ul>
+            <footer class="panel-foot">
+              <button class="btn btn-ghost btn-sm">Edit</button>
+              <button class="btn btn-ghost btn-sm">Duplicate</button>
+              <button class="btn btn-ghost btn-sm danger">Delete</button>
+            </footer>
+          </article>
+
+          <button class="card profile-add">
+            <div>+</div>
+            <h3>Create new profile</h3>
+            <p class="muted">Drop in a resume and target role.</p>
+          </button>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/js/app.js"></script>
+</body>
+</html>

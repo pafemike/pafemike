@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Aiyedrix · Interview Reports</title>
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/app.css" />
+</head>
+<body class="app">
+  <div class="app-shell" data-page="reports" data-base="../">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="workspace">
+      <header class="topbar">
+        <button class="icon-btn sidebar-toggle" data-toggle="sidebar" aria-label="Toggle sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="crumbs"><a href="../app.html">Home</a><span> / </span><span>Interview Reports</span></div>
+      </header>
+
+      <div class="content">
+        <section class="welcome">
+          <div><h1>Interview Reports</h1><p class="muted">Every session, scored and summarized.</p></div>
+        </section>
+
+        <section class="row">
+          <article class="card panel wide">
+            <header class="panel-head"><h3>Backend Mock · Stripe</h3><span class="score good">8.6</span></header>
+            <p class="muted">Yesterday · 42 min · 5 questions</p>
+            <div class="bars">
+              <div><span>Communication</span><div class="bar good"><i style="width:88%"></i></div></div>
+              <div><span>Technical depth</span><div class="bar good"><i style="width:84%"></i></div></div>
+              <div><span>Quantifying impact</span><div class="bar warn"><i style="width:62%"></i></div></div>
+              <div><span>Structure (STAR)</span><div class="bar good"><i style="width:90%"></i></div></div>
+            </div>
+            <footer class="panel-foot">
+              <button class="btn btn-ghost btn-sm">Replay session</button>
+              <button class="btn btn-primary btn-sm">Open study plan</button>
+            </footer>
+          </article>
+
+          <article class="card panel">
+            <header class="panel-head"><h3>Top wins</h3></header>
+            <ul class="bul">
+              <li>Strong STAR structure on the leadership question.</li>
+              <li>Clean trade-off discussion on idempotency.</li>
+              <li>Confident pacing throughout.</li>
+            </ul>
+          </article>
+
+          <article class="card panel">
+            <header class="panel-head"><h3>Work on</h3></header>
+            <ul class="bul">
+              <li>Add concrete metrics to <i>every</i> impact claim.</li>
+              <li>Cut filler ("kind of", "you know") — 14 instances.</li>
+              <li>Tighten system design intro to 90 seconds.</li>
+            </ul>
+          </article>
+        </section>
+
+        <section class="card panel">
+          <header class="panel-head"><h3>All sessions</h3></header>
+          <ul class="session-list">
+            <li><span class="dot good"></span><div><b>Backend Mock · Stripe</b><small class="muted">Mock · 42 min · Yesterday</small></div><span class="score good">8.6</span></li>
+            <li><span class="dot warn"></span><div><b>PM Copilot · Meta</b><small class="muted">Copilot · 31 min · 3 days ago</small></div><span class="score warn">7.1</span></li>
+            <li><span class="dot good"></span><div><b>System Design · Google</b><small class="muted">Mock · 55 min · Last week</small></div><span class="score good">8.9</span></li>
+            <li><span class="dot bad"></span><div><b>Coding · OpenAI</b><small class="muted">Copilot · 38 min · 2 weeks ago</small></div><span class="score bad">5.9</span></li>
+          </ul>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Aiyedrix · Settings</title>
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/app.css" />
+</head>
+<body class="app">
+  <div class="app-shell" data-page="settings" data-base="../">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="workspace">
+      <header class="topbar">
+        <button class="icon-btn sidebar-toggle" data-toggle="sidebar" aria-label="Toggle sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="crumbs"><a href="../app.html">Home</a><span> / </span><span>Settings</span></div>
+      </header>
+
+      <div class="content">
+        <section class="welcome">
+          <div><h1>Settings</h1><p class="muted">Account, audio, billing, and privacy.</p></div>
+        </section>
+
+        <section class="card panel">
+          <header class="panel-head"><h3>Account</h3></header>
+          <div class="form-grid">
+            <label class="field"><span>Name</span><input type="text" value="Peter Aiyede"/></label>
+            <label class="field"><span>Email</span><input type="email" value="peter@aiyedrix.com"/></label>
+            <label class="field"><span>Plan</span><input type="text" value="Free" disabled/></label>
+            <label class="field"><span>Default language</span>
+              <select><option>English (US)</option><option>English (UK)</option><option>French</option></select>
+            </label>
+          </div>
+        </section>
+
+        <section class="card panel">
+          <header class="panel-head"><h3>Audio</h3></header>
+          <div class="form-grid">
+            <label class="field"><span>Microphone</span><select><option>MacBook Pro Microphone</option></select></label>
+            <label class="field"><span>System audio</span><select><option>BlackHole 2ch</option></select></label>
+          </div>
+        </section>
+
+        <section class="card panel">
+          <header class="panel-head"><h3>Privacy</h3></header>
+          <label class="field full toggle"><input type="checkbox" checked/><span>Stealth mode by default</span></label>
+          <label class="field full toggle"><input type="checkbox"/><span>Save transcripts to Reports</span></label>
+          <label class="field full toggle"><input type="checkbox"/><span>Allow product analytics</span></label>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/js/app.js"></script>
+</body>
+</html>

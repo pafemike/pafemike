@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Aiyedrix · AI Mock Interview</title>
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/app.css" />
+</head>
+<body class="app">
+  <div class="app-shell" data-page="mock" data-base="../">
+    <aside class="sidebar" id="sidebar"></aside>
+    <main class="workspace">
+      <header class="topbar">
+        <button class="icon-btn sidebar-toggle" data-toggle="sidebar" aria-label="Toggle sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <div class="crumbs"><a href="../app.html">Home</a><span> / </span><span>AI Mock</span></div>
+        <div class="topbar-right">
+          <button class="btn btn-primary btn-sm" id="startMock">+ Start mock</button>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="welcome">
+          <div>
+            <h1>AI Mock Interview</h1>
+            <p class="muted">Practice with an AI interviewer that scores your answers and writes a study plan.</p>
+          </div>
+        </section>
+
+        <section class="cards-grid">
+          <button class="card tile select" style="--tile:#7c5cff">
+            <span class="tile-tag">BEHAVIORAL</span>
+            <h3>Behavioral · 30 min</h3>
+            <p>5 STAR questions tailored to your resume and target role.</p>
+          </button>
+          <button class="card tile select" style="--tile:#22d3ee">
+            <span class="tile-tag">CODING</span>
+            <h3>Coding · 45 min</h3>
+            <p>2 LeetCode-style problems with hint ladder and complexity review.</p>
+          </button>
+          <button class="card tile select" style="--tile:#f59e0b">
+            <span class="tile-tag">SYSTEM DESIGN</span>
+            <h3>System Design · 60 min</h3>
+            <p>Open-ended scaling prompt with diagram critique.</p>
+          </button>
+          <button class="card tile select" style="--tile:#ec4899">
+            <span class="tile-tag">PM</span>
+            <h3>Product Sense · 30 min</h3>
+            <p>Design a feature, prioritize, and defend trade-offs.</p>
+          </button>
+        </section>
+
+        <section class="row">
+          <article class="card panel">
+            <header class="panel-head"><h3>Past mocks</h3></header>
+            <ul class="session-list">
+              <li><span class="dot good"></span><div><b>Backend Mock · Stripe</b><small class="muted">42 min · Yesterday</small></div><span class="score good">8.6</span></li>
+              <li><span class="dot warn"></span><div><b>PM Mock · Meta</b><small class="muted">31 min · 3 days ago</small></div><span class="score warn">7.1</span></li>
+              <li><span class="dot good"></span><div><b>System Design · Google</b><small class="muted">55 min · Last week</small></div><span class="score good">8.9</span></li>
+            </ul>
+          </article>
+
+          <article class="card panel">
+            <header class="panel-head"><h3>Study plan</h3></header>
+            <ul class="kv">
+              <li><span>Top weakness</span><b>Quantifying impact</b></li>
+              <li><span>Drill</span><b>5 STAR rewrites with metrics</b></li>
+              <li><span>Read</span><b>"Designing Data-Intensive Apps" — ch. 5</b></li>
+              <li><span>Next mock</span><b>Tomorrow, 7pm</b></li>
+            </ul>
+          </article>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script src="../assets/js/app.js"></script>
+  <script>
+    document.getElementById('startMock').addEventListener('click', () => location.href = 'copilot.html');
+    document.querySelectorAll('.tile.select').forEach(b => b.addEventListener('click', () => location.href = 'copilot.html'));
+  </script>
+</body>
+</html>
