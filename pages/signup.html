@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Aiyedrix · Create account</title>
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/app.css" />
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <a class="brand auth-brand" href="../index.html">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+          <defs><linearGradient id="sgrad" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+          <path d="M16 2 L29 28 H22 L20 23 H12 L10 28 H3 Z M14 17 H18 L16 11 Z" fill="url(#sgrad)"/>
+        </svg>
+      </span>
+      <span class="brand-text">Aiyedrix</span>
+    </a>
+
+    <section class="card auth-card">
+      <h1>Create your account</h1>
+      <p class="muted">Start practicing in 30 seconds.</p>
+
+      <form id="signupForm" class="form-grid" autocomplete="on">
+        <label class="field full">
+          <span>Full name</span>
+          <input type="text" name="name" required autocomplete="name" />
+        </label>
+        <label class="field full">
+          <span>Email</span>
+          <input type="email" name="email" required autocomplete="email" />
+        </label>
+        <label class="field full">
+          <span>Password (min 8 characters)</span>
+          <input type="password" name="password" required minlength="8" autocomplete="new-password" />
+        </label>
+        <div class="field full" id="signupErr" role="alert" hidden></div>
+        <button type="submit" class="btn btn-primary btn-lg full">Create account</button>
+      </form>
+
+      <p class="auth-foot muted">
+        Already have an account? <a href="login.html">Sign in</a>
+      </p>
+    </section>
+  </main>
+
+  <script type="module">
+    import { signup } from '../assets/js/auth.js';
+    const form = document.getElementById('signupForm');
+    const err = document.getElementById('signupErr');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.hidden = true;
+      const fd = new FormData(form);
+      const r = await signup(fd.get('email'), fd.get('password'), fd.get('name'));
+      if (r.ok) location.href = '../app.html';
+      else { err.textContent = r.error; err.hidden = false; }
+    });
+  </script>
+</body>
+</html>

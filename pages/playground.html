@@ -58,20 +58,6 @@
     </main>
   </div>
   <script src="../assets/js/app.js"></script>
-  <script>
-    const sample = {
-      short: '<p>Led the Q4 Acme checkout rewrite. Shipped 3 days early, latency -38%, conversion +12%.</p>',
-      full: '<p><b>STAR — Q4 Acme launch</b></p><p>The team was rebuilding checkout under a 2-week runway with 4 engineers blocked. I owned delivery, parallelized risk burn-down, ran 10-min daily stand-ups with the SRE lead, and shipped 3 days early. Latency dropped 38% and conversion lifted 12% with zero rollback.</p>',
-      bullets: '<ul><li>Owned a 2-week checkout rewrite at Acme</li><li>Unblocked 4 engineers via daily 10-min stand-ups</li><li>Shipped 3 days early</li><li>Latency -38%, conversion +12%, zero rollback</li></ul>'
-    };
-    const segs = document.querySelectorAll('.seg-btn');
-    let mode = 'short';
-    segs.forEach(b => b.addEventListener('click', () => { segs.forEach(x=>x.classList.remove('active')); b.classList.add('active'); mode = b.dataset.len; }));
-    document.getElementById('pgGo').addEventListener('click', () => {
-      const out = document.getElementById('pgOut');
-      out.style.opacity = .4;
-      setTimeout(() => { out.innerHTML = sample[mode]; out.style.opacity = 1; }, 350);
-    });
-  </script>
+  <script src="../assets/js/playground.js"></script>
 </body>
 </html>

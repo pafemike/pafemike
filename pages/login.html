@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Aiyedrix · Sign in</title>
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/css/main.css" />
+  <link rel="stylesheet" href="../assets/css/app.css" />
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <a class="brand auth-brand" href="../index.html">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+          <defs><linearGradient id="lg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+          <path d="M16 2 L29 28 H22 L20 23 H12 L10 28 H3 Z M14 17 H18 L16 11 Z" fill="url(#lg)"/>
+        </svg>
+      </span>
+      <span class="brand-text">Aiyedrix</span>
+    </a>
+
+    <section class="card auth-card">
+      <h1>Welcome back</h1>
+      <p class="muted">Sign in to your copilot.</p>
+
+      <form id="loginForm" class="form-grid" autocomplete="on">
+        <label class="field full">
+          <span>Email</span>
+          <input type="email" name="email" required autocomplete="email" />
+        </label>
+        <label class="field full">
+          <span>Password</span>
+          <input type="password" name="password" required autocomplete="current-password" minlength="8" />
+        </label>
+        <div class="field full" id="loginErr" role="alert" hidden></div>
+        <button type="submit" class="btn btn-primary btn-lg full">Sign in</button>
+      </form>
+
+      <p class="auth-foot muted">
+        Don't have an account? <a href="signup.html">Create one</a>
+      </p>
+    </section>
+  </main>
+
+  <script type="module">
+    import { signin } from '../assets/js/auth.js';
+    const form = document.getElementById('loginForm');
+    const err = document.getElementById('loginErr');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.hidden = true;
+      const fd = new FormData(form);
+      const r = await signin(fd.get('email'), fd.get('password'));
+      if (r.ok) location.href = '../app.html';
+      else { err.textContent = r.error; err.hidden = false; }
+    });
+  </script>
+</body>
+</html>

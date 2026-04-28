@@ -375,3 +375,49 @@ button.tile { font: inherit; }
 .bars > div { display: grid; grid-template-columns: 180px 1fr; gap: .8rem; align-items: center; }
 .bars span { color: var(--text-2); font-size: .9rem; }
 @media (max-width: 700px) { .bars > div { grid-template-columns: 1fr; } }
+
+/* ---------- auth pages ---------- */
+body.auth-page {
+  display: grid; place-items: center; padding: 2rem 1rem;
+  min-height: 100vh;
+}
+.auth-shell { width: min(440px, 100%); display: flex; flex-direction: column; gap: 1.4rem; align-items: center; }
+.auth-brand { font-size: 1.25rem; }
+.auth-card { width: 100%; padding: 2rem; }
+.auth-card h1 { margin: 0 0 .25rem; }
+.auth-card .form-grid { margin-top: 1.2rem; gap: .85rem; }
+.auth-card .btn.full { grid-column: 1 / -1; }
+.auth-foot { text-align: center; margin-top: 1rem; }
+.auth-foot a { color: var(--brand); }
+[role="alert"] {
+  background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.4);
+  color: #fca5a5; padding: .55rem .8rem; border-radius: 8px; font-size: .9rem;
+}
+
+/* user card with sign-out button */
+.user-card { display: flex; align-items: center; gap: .35rem; }
+.user-card .user-link {
+  flex: 1; display: flex; align-items: center; gap: .6rem;
+  padding: .55rem .65rem; border-radius: 12px; min-width: 0;
+}
+.user-card .user-link:hover { background: rgba(255,255,255,.06); }
+.user-card .user-meta { min-width: 0; }
+.user-card .user-meta b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-card .signout { width: 32px; height: 32px; }
+.user-card .signout:hover { color: #fca5a5; border-color: rgba(239,68,68,.3); }
+
+/* live answer error block */
+.error-block {
+  background: rgba(239,68,68,.10); border: 1px solid rgba(239,68,68,.35);
+  color: #fca5a5; padding: .7rem .9rem; border-radius: 10px;
+}
+.error-block code {
+  background: rgba(0,0,0,.3); padding: .1rem .35rem; border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace; font-size: .85em;
+}
+.answer code, .answer ul code, .answer p code {
+  font-family: 'JetBrains Mono', monospace; font-size: .9em;
+  background: rgba(255,255,255,.07); padding: .05rem .35rem; border-radius: 4px;
+}
+.answer p { margin: .35rem 0; }
+
