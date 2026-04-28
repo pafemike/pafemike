@@ -7,6 +7,7 @@ import { dirname, join } from 'node:path';
 import './db.js';
 import { registerAuthRoutes } from './auth.js';
 import { registerAnswerRoute } from './answer.js';
+import { registerProfileRoutes } from './profiles.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -20,6 +21,7 @@ app.use(cookieParser());
 
 registerAuthRoutes(app);
 registerAnswerRoute(app);
+registerProfileRoutes(app);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

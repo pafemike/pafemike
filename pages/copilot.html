@@ -89,22 +89,20 @@
               <label class="field">
                 <span>Interview profile</span>
                 <select id="profileSelect">
-                  <option>Peter Aiyede — Senior Backend Engineer</option>
-                  <option>Peter Aiyede — Staff PM</option>
-                  <option>+ New profile</option>
+                  <option value="">Loading…</option>
                 </select>
               </label>
               <label class="field">
                 <span>Target company</span>
-                <input type="text" placeholder="e.g. Stripe" value="Stripe" />
+                <input id="wizCompany" type="text" placeholder="e.g. Stripe" />
               </label>
               <label class="field">
                 <span>Role / level</span>
-                <input type="text" placeholder="e.g. Senior Backend Engineer (L5)" value="Senior Backend Engineer (L5)" />
+                <input id="wizRole" type="text" placeholder="e.g. Senior Backend Engineer (L5)" />
               </label>
               <label class="field">
                 <span>Language</span>
-                <select>
+                <select id="wizLanguage">
                   <option>English (US)</option>
                   <option>English (UK)</option>
                   <option>French</option>
@@ -115,15 +113,14 @@
               </label>
               <label class="field full">
                 <span>Job description</span>
-                <textarea rows="6" placeholder="Paste the JD here…">We're hiring a Senior Backend Engineer to own payment reliability at scale. You will design distributed systems, lead incident response, and partner with product to ship money-movement features used by millions of businesses…</textarea>
+                <textarea id="wizJD" rows="6" placeholder="Paste the JD here…"></textarea>
               </label>
-              <label class="field full">
+              <div class="field full">
                 <span>Resume</span>
-                <div class="upload">
-                  <span>📎 peter-aiyede-2026.pdf</span>
-                  <button type="button" class="btn btn-ghost btn-sm">Replace</button>
+                <div class="upload" id="wizResumeStatus">
+                  <span class="muted">Pick a profile above to attach its resume — or <a href="profiles.html">manage profiles</a>.</span>
                 </div>
-              </label>
+              </div>
             </div>
           </div>
 
@@ -227,6 +224,7 @@
   </div>
 
   <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/profiles-api.js"></script>
   <script src="../assets/js/copilot.js"></script>
 </body>
 </html>

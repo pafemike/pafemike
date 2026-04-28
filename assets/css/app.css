@@ -421,3 +421,38 @@ body.auth-page {
 }
 .answer p { margin: .35rem 0; }
 
+/* ---------- modal dialog (profile editor) ---------- */
+.dlg {
+  border: 0; padding: 0; background: transparent; color: var(--text);
+  width: min(640px, 92vw); max-height: 90vh;
+}
+.dlg::backdrop { background: rgba(4, 4, 8, .7); backdrop-filter: blur(4px); }
+.dlg-card {
+  background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+  border: 1px solid var(--line-2); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: flex; flex-direction: column; max-height: 90vh; overflow: hidden;
+}
+.dlg-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1.2rem; border-bottom: 1px solid var(--line);
+}
+.dlg-head h2 { margin: 0; font-size: 1.1rem; }
+.dlg-card .form-grid {
+  padding: 1.2rem; gap: .9rem; overflow-y: auto;
+}
+.dlg-foot {
+  display: flex; gap: .5rem; justify-content: flex-end;
+  padding: .85rem 1.2rem; border-top: 1px solid var(--line);
+  background: rgba(0,0,0,.2);
+}
+
+/* profile card tweaks for new layout */
+.profile-card .profile-mini { gap: .7rem; align-items: center; }
+.profile-card .profile-head { flex: 1; min-width: 0; }
+.profile-card .profile-head b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-card .default-badge {
+  position: static; padding: .2rem .55rem; font-size: .65rem;
+  background: var(--grad); color: #0a0a12;
+}
+

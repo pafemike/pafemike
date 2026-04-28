@@ -140,24 +140,12 @@
             </ul>
           </article>
 
-          <article class="card panel">
+          <article class="card panel" id="profilePanel">
             <header class="panel-head">
               <h3>Your interview profile</h3>
-              <a href="pages/profiles.html" class="muted">Edit →</a>
+              <a href="pages/profiles.html" class="muted">Manage →</a>
             </header>
-            <div class="profile-mini">
-              <div class="avatar">PA</div>
-              <div>
-                <b>Peter Aiyede</b>
-                <small class="muted">Targeting: Senior Backend Engineer</small>
-              </div>
-            </div>
-            <ul class="kv">
-              <li><span>Resume</span><b>peter-aiyede-2026.pdf</b></li>
-              <li><span>Target role</span><b>Backend Engineer (L5)</b></li>
-              <li><span>Target companies</span><b>Stripe, Meta, OpenAI</b></li>
-              <li><span>Language</span><b>English (US)</b></li>
-            </ul>
+            <div id="profilePanelBody"><p class="muted small">Loading…</p></div>
           </article>
         </section>
       </div>
@@ -165,5 +153,40 @@
   </div>
 
   <script src="assets/js/app.js"></script>
+  <script src="assets/js/profiles-api.js"></script>
+  <script>
+    (async () => {
+      const body = document.getElementById('profilePanelBody');
+      const escape = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+      try {
+        const profiles = await window.aiyedrix.profiles.list();
+        if (profiles.length === 0) {
+          body.innerHTML = `
+            <p class="muted">No profiles yet. Create one so Aiyedrix can personalize every answer.</p>
+            <a class="btn btn-primary btn-sm" href="pages/profiles.html">+ Create profile</a>`;
+          return;
+        }
+        const p = profiles.find((x) => x.isDefault) || profiles[0];
+        const initials = (p.title || '?').split(/\s+/).map(s => s[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
+        body.innerHTML = `
+          <div class="profile-mini">
+            <div class="avatar">${escape(initials)}</div>
+            <div class="profile-head">
+              <b>${escape(p.title)}</b>
+              <small class="muted">${escape(p.role || 'No target role set')}</small>
+            </div>
+          </div>
+          <ul class="kv">
+            <li><span>Resume</span><b>${p.resumeText ? `${p.resumeText.length.toLocaleString()} chars` : 'Not provided'}</b></li>
+            <li><span>Target role</span><b>${escape(p.role || '—')}</b></li>
+            <li><span>Target companies</span><b>${escape(p.companies || p.company || '—')}</b></li>
+            <li><span>Language</span><b>${escape(p.language || 'English (US)')}</b></li>
+          </ul>`;
+      } catch (e) {
+        if (e.status === 401) { location.href = 'pages/login.html'; return; }
+        body.innerHTML = `<p class="error-block">${escape(e.message)}</p>`;
+      }
+    })();
+  </script>
 </body>
 </html>

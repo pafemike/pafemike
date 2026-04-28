@@ -18,63 +18,240 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
         </button>
         <div class="crumbs"><a href="../app.html">Home</a><span> / </span><span>Interview Profiles</span></div>
-        <div class="topbar-right"><button class="btn btn-primary btn-sm">+ New profile</button></div>
+        <div class="topbar-right"><button class="btn btn-primary btn-sm" id="newProfileBtn">+ New profile</button></div>
       </header>
 
       <div class="content">
         <section class="welcome">
           <div>
             <h1>Interview Profiles</h1>
-            <p class="muted">One profile per role you're targeting. Aiyedrix uses these to personalize every answer.</p>
+            <p class="muted">One profile per role you're targeting. Aiyedrix uses the default profile to personalize live answers.</p>
           </div>
         </section>
 
-        <section class="cards-grid">
-          <article class="card profile-card">
-            <header class="profile-mini">
-              <div class="avatar">PA</div>
-              <div><b>Senior Backend Engineer</b><small class="muted">Stripe · Meta · OpenAI</small></div>
-            </header>
-            <ul class="kv">
-              <li><span>Resume</span><b>peter-aiyede-2026.pdf</b></li>
-              <li><span>Years</span><b>8</b></li>
-              <li><span>Top stack</span><b>Go, Python, Postgres, Kafka</b></li>
-              <li><span>Language</span><b>English (US)</b></li>
-            </ul>
-            <footer class="panel-foot">
-              <button class="btn btn-ghost btn-sm">Edit</button>
-              <button class="btn btn-ghost btn-sm">Duplicate</button>
-              <button class="btn btn-ghost btn-sm danger">Delete</button>
-            </footer>
-          </article>
-
-          <article class="card profile-card">
-            <header class="profile-mini">
-              <div class="avatar alt">PA</div>
-              <div><b>Staff Product Manager</b><small class="muted">Meta · Notion</small></div>
-            </header>
-            <ul class="kv">
-              <li><span>Resume</span><b>peter-aiyede-pm.pdf</b></li>
-              <li><span>Years</span><b>6</b></li>
-              <li><span>Domain</span><b>Fintech, Growth</b></li>
-              <li><span>Language</span><b>English (US)</b></li>
-            </ul>
-            <footer class="panel-foot">
-              <button class="btn btn-ghost btn-sm">Edit</button>
-              <button class="btn btn-ghost btn-sm">Duplicate</button>
-              <button class="btn btn-ghost btn-sm danger">Delete</button>
-            </footer>
-          </article>
-
-          <button class="card profile-add">
-            <div>+</div>
-            <h3>Create new profile</h3>
-            <p class="muted">Drop in a resume and target role.</p>
-          </button>
+        <div id="profilesError" class="error-block" hidden></div>
+        <section class="cards-grid" id="profilesGrid">
+          <p class="muted">Loading profiles…</p>
         </section>
       </div>
     </main>
   </div>
+
+  <!-- Editor dialog -->
+  <dialog id="editor" class="dlg">
+    <form method="dialog" id="editorForm" class="dlg-card">
+      <header class="dlg-head">
+        <h2 id="editorTitle">New profile</h2>
+        <button class="icon-btn" type="button" value="cancel" aria-label="Close" data-action="cancel">×</button>
+      </header>
+      <div class="form-grid">
+        <label class="field full">
+          <span>Profile name</span>
+          <input name="title" type="text" required maxlength="120" placeholder="e.g. Senior Backend Engineer" />
+        </label>
+        <label class="field">
+          <span>Role / level</span>
+          <input name="role" type="text" maxlength="200" placeholder="e.g. Senior Backend Engineer (L5)" />
+        </label>
+        <label class="field">
+          <span>Primary target company</span>
+          <input name="company" type="text" maxlength="120" placeholder="e.g. Stripe" />
+        </label>
+        <label class="field">
+          <span>All target companies</span>
+          <input name="companies" type="text" maxlength="500" placeholder="e.g. Stripe, Meta, OpenAI" />
+        </label>
+        <label class="field">
+          <span>Language</span>
+          <select name="language">
+            <option>English (US)</option>
+            <option>English (UK)</option>
+            <option>French</option>
+            <option>Spanish</option>
+            <option>German</option>
+            <option>Mandarin</option>
+          </select>
+        </label>
+        <label class="field full">
+          <span>Resume (paste the text)</span>
+          <textarea name="resumeText" rows="5" placeholder="Paste your resume…"></textarea>
+        </label>
+        <label class="field full">
+          <span>Job description</span>
+          <textarea name="jdText" rows="5" placeholder="Paste the JD…"></textarea>
+        </label>
+        <label class="field full toggle">
+          <input type="checkbox" name="isDefault" /> <span>Use as default profile (Copilot will use this in live sessions)</span>
+        </label>
+        <div class="field full" id="editorErr" role="alert" hidden></div>
+      </div>
+      <footer class="dlg-foot">
+        <button class="btn btn-ghost" type="button" data-action="cancel">Cancel</button>
+        <button class="btn btn-primary" type="submit" id="saveBtn">Save profile</button>
+      </footer>
+    </form>
+  </dialog>
+
   <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/profiles-api.js"></script>
+  <script>
+    const grid = document.getElementById('profilesGrid');
+    const errBox = document.getElementById('profilesError');
+    const dlg = document.getElementById('editor');
+    const form = document.getElementById('editorForm');
+    const editorErr = document.getElementById('editorErr');
+    const saveBtn = document.getElementById('saveBtn');
+
+    let editingId = null;
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function showError(msg) { errBox.textContent = msg; errBox.hidden = false; }
+    function clearError() { errBox.hidden = true; errBox.textContent = ''; }
+
+    function profileCard(p) {
+      const initials = (p.title || '?').split(/\s+/).map((s) => s[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
+      const targetLine = [p.role, p.companies || p.company].filter(Boolean).join(' · ');
+      return `
+        <article class="card profile-card" data-id="${p.id}">
+          <header class="profile-mini">
+            <div class="avatar${p.isDefault ? '' : ' alt'}">${escapeHtml(initials)}</div>
+            <div class="profile-head">
+              <b>${escapeHtml(p.title)}</b>
+              <small class="muted">${escapeHtml(targetLine || 'No target set')}</small>
+            </div>
+            ${p.isDefault ? '<span class="badge default-badge">Default</span>' : ''}
+          </header>
+          <ul class="kv">
+            <li><span>Role</span><b>${escapeHtml(p.role || '—')}</b></li>
+            <li><span>Companies</span><b>${escapeHtml(p.companies || p.company || '—')}</b></li>
+            <li><span>Language</span><b>${escapeHtml(p.language || '—')}</b></li>
+            <li><span>Resume</span><b>${p.resumeText ? `${p.resumeText.length.toLocaleString()} chars` : 'Not provided'}</b></li>
+            <li><span>JD</span><b>${p.jdText ? `${p.jdText.length.toLocaleString()} chars` : 'Not provided'}</b></li>
+          </ul>
+          <footer class="panel-foot">
+            <button class="btn btn-ghost btn-sm" data-action="edit">Edit</button>
+            ${p.isDefault ? '' : '<button class="btn btn-ghost btn-sm" data-action="default">Set default</button>'}
+            <button class="btn btn-ghost btn-sm danger" data-action="delete">Delete</button>
+          </footer>
+        </article>`;
+    }
+
+    function emptyState() {
+      return `
+        <button class="card profile-add" id="emptyAdd">
+          <div>+</div>
+          <h3>Create your first profile</h3>
+          <p class="muted">Drop in a resume and target role to start practicing.</p>
+        </button>`;
+    }
+
+    async function load() {
+      clearError();
+      try {
+        const profiles = await window.aiyedrix.profiles.list();
+        if (profiles.length === 0) {
+          grid.innerHTML = emptyState();
+          document.getElementById('emptyAdd').addEventListener('click', () => openEditor());
+          return;
+        }
+        grid.innerHTML = profiles.map(profileCard).join('') + `
+          <button class="card profile-add" id="addCard">
+            <div>+</div>
+            <h3>Create new profile</h3>
+            <p class="muted">Drop in a resume and target role.</p>
+          </button>`;
+        document.getElementById('addCard').addEventListener('click', () => openEditor());
+        grid.querySelectorAll('.profile-card').forEach((card) => {
+          const id = Number(card.dataset.id);
+          card.querySelectorAll('[data-action]').forEach((btn) => {
+            btn.addEventListener('click', (e) => onAction(id, btn.dataset.action, e));
+          });
+        });
+      } catch (e) {
+        if (e.status === 401) { location.href = 'login.html'; return; }
+        showError(e.message);
+      }
+    }
+
+    function openEditor(profile) {
+      editingId = profile?.id ?? null;
+      document.getElementById('editorTitle').textContent = profile ? 'Edit profile' : 'New profile';
+      saveBtn.textContent = profile ? 'Save changes' : 'Create profile';
+      editorErr.hidden = true;
+
+      form.reset();
+      const set = (name, value) => { const el = form.elements[name]; if (el) el.value = value || ''; };
+      set('title', profile?.title);
+      set('role', profile?.role);
+      set('company', profile?.company);
+      set('companies', profile?.companies);
+      set('language', profile?.language || 'English (US)');
+      set('resumeText', profile?.resumeText);
+      set('jdText', profile?.jdText);
+      form.elements.isDefault.checked = !!profile?.isDefault;
+
+      dlg.showModal();
+      form.elements.title.focus();
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      editorErr.hidden = true;
+
+      const fd = new FormData(form);
+      const payload = {
+        title: fd.get('title')?.toString().trim() || '',
+        role: fd.get('role')?.toString().trim() || '',
+        company: fd.get('company')?.toString().trim() || '',
+        companies: fd.get('companies')?.toString().trim() || '',
+        language: fd.get('language')?.toString() || 'English (US)',
+        resumeText: fd.get('resumeText')?.toString() || '',
+        jdText: fd.get('jdText')?.toString() || '',
+        isDefault: form.elements.isDefault.checked,
+      };
+      if (!payload.title) { editorErr.textContent = 'Profile name is required'; editorErr.hidden = false; return; }
+
+      saveBtn.disabled = true;
+      try {
+        if (editingId) await window.aiyedrix.profiles.update(editingId, payload);
+        else await window.aiyedrix.profiles.create(payload);
+        dlg.close();
+        await load();
+      } catch (err) {
+        editorErr.textContent = err.message;
+        editorErr.hidden = false;
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+
+    form.querySelectorAll('[data-action="cancel"]').forEach((btn) =>
+      btn.addEventListener('click', () => dlg.close())
+    );
+
+    async function onAction(id, action, e) {
+      e.preventDefault();
+      try {
+        if (action === 'edit') {
+          openEditor(await window.aiyedrix.profiles.get(id));
+        } else if (action === 'default') {
+          await window.aiyedrix.profiles.setDefault(id);
+          await load();
+        } else if (action === 'delete') {
+          if (!confirm('Delete this profile? This can\'t be undone.')) return;
+          await window.aiyedrix.profiles.delete(id);
+          await load();
+        }
+      } catch (err) {
+        if (err.status === 401) { location.href = 'login.html'; return; }
+        showError(err.message);
+      }
+    }
+
+    document.getElementById('newProfileBtn').addEventListener('click', () => openEditor());
+    load();
+  </script>
 </body>
 </html>

@@ -36,12 +36,77 @@
   const goBtn = document.getElementById('goLive');
   if (goBtn) goBtn.addEventListener('click', goLive);
 
+  // ===== profiles dropdown =====
+  const profileSelect = document.getElementById('profileSelect');
+  const wizCompany = document.getElementById('wizCompany');
+  const wizRole = document.getElementById('wizRole');
+  const wizLanguage = document.getElementById('wizLanguage');
+  const wizJD = document.getElementById('wizJD');
+  const wizResumeStatus = document.getElementById('wizResumeStatus');
+
+  let availableProfiles = [];
+  let selectedProfile = null;
+
+  function applyProfile(p) {
+    selectedProfile = p;
+    if (!p) {
+      wizResumeStatus.innerHTML = '<span class="muted">Pick a profile above to attach its resume — or <a href="profiles.html">manage profiles</a>.</span>';
+      return;
+    }
+    if (p.role)      wizRole.value = p.role;
+    if (p.company)   wizCompany.value = p.company;
+    if (p.language)  wizLanguage.value = p.language;
+    if (p.jdText)    wizJD.value = p.jdText;
+    wizResumeStatus.innerHTML = p.resumeText
+      ? `<span>✓ Resume attached <small class="muted">(${p.resumeText.length.toLocaleString()} chars)</small></span><a class="btn btn-ghost btn-sm" href="profiles.html">Edit profile</a>`
+      : `<span class="muted">No resume on this profile yet — <a href="profiles.html">add one</a>.</span>`;
+  }
+
+  async function loadProfiles() {
+    if (!window.aiyedrix?.profiles) return;
+    try {
+      availableProfiles = await window.aiyedrix.profiles.list();
+    } catch (e) {
+      if (e.status === 401) { location.href = 'login.html'; return; }
+      profileSelect.innerHTML = '<option value="">(failed to load profiles)</option>';
+      return;
+    }
+    if (availableProfiles.length === 0) {
+      profileSelect.innerHTML = `
+        <option value="">No profiles yet</option>
+        <option value="__new__">+ Create your first profile</option>`;
+      return;
+    }
+    const opts = availableProfiles.map((p) => {
+      const label = p.role ? `${p.title} — ${p.role}` : p.title;
+      const def = p.isDefault ? ' (default)' : '';
+      return `<option value="${p.id}">${escapeHtml(label)}${def}</option>`;
+    });
+    opts.push('<option value="__new__">+ New profile…</option>');
+    profileSelect.innerHTML = opts.join('');
+
+    const def = availableProfiles.find((p) => p.isDefault) || availableProfiles[0];
+    profileSelect.value = String(def.id);
+    applyProfile(def);
+  }
+
+  profileSelect.addEventListener('change', () => {
+    const v = profileSelect.value;
+    if (v === '__new__') { location.href = 'profiles.html'; return; }
+    const p = availableProfiles.find((x) => String(x.id) === v);
+    applyProfile(p || null);
+  });
+
+  loadProfiles();
+
   function readProfile() {
-    const role = document.querySelector('[data-step="2"] input[placeholder*="Senior Backend"]')?.value || '';
-    const company = document.querySelector('[data-step="2"] input[placeholder*="Stripe"]')?.value || '';
-    const lang = document.querySelector('[data-step="2"] select:nth-of-type(1)')?.value || 'English (US)';
-    const jd = document.querySelector('[data-step="2"] textarea')?.value || '';
-    return { role, company, language: lang, jdText: jd };
+    return {
+      role: wizRole.value.trim(),
+      company: wizCompany.value.trim(),
+      language: wizLanguage.value,
+      jdText: wizJD.value.trim(),
+      resumeText: selectedProfile?.resumeText || '',
+    };
   }
 
   let liveProfile = null;
