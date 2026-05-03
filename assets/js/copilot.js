@@ -110,14 +110,38 @@
   }
 
   let liveProfile = null;
+  let liveSessionId = null;
 
-  function goLive() {
+  function chosenTemplate() {
+    const el = document.querySelector('.tile.select.chosen');
+    return el?.dataset.template || 'all-in-one';
+  }
+
+  async function goLive() {
     liveProfile = readProfile();
     wizard.classList.add('hidden');
     live.classList.remove('hidden');
     stepPill.textContent = '● LIVE';
     stepPill.classList.add('live-pill');
     continueBtn.classList.add('hidden');
+
+    // Create the persistent session — the rest of the live screen logs into it.
+    try {
+      const titleBits = [liveProfile.role || chosenTemplate(), liveProfile.company].filter(Boolean);
+      const session = await window.aiyedrix.sessions.create({
+        profileId: selectedProfile?.id ?? null,
+        kind: 'copilot',
+        title: titleBits.join(' · ') || 'Copilot session',
+        template: chosenTemplate(),
+        company: liveProfile.company || null,
+        role: liveProfile.role || null,
+      });
+      liveSessionId = session.id;
+    } catch (e) {
+      // If we can't create a session (e.g., 401), fall back to ephemeral; the answer endpoint still works.
+      if (e.status === 401) { location.href = 'login.html'; return; }
+      console.warn('session create failed:', e.message);
+    }
   }
 
   let currentMode = 'full';
@@ -165,8 +189,13 @@
     if (e.key === 'Enter') { e.preventDefault(); document.getElementById('askBtn').click(); }
   });
 
-  document.getElementById('endSession')?.addEventListener('click', () => {
-    location.href = 'reports.html';
+  document.getElementById('endSession')?.addEventListener('click', async () => {
+    if (liveSessionId) {
+      try { await window.aiyedrix.sessions.end(liveSessionId, {}); } catch {}
+      location.href = `reports.html?id=${liveSessionId}`;
+    } else {
+      location.href = 'reports.html';
+    }
   });
 
   // ===== streaming AI call =====
@@ -185,7 +214,12 @@
       res = await fetch('/api/answer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, format, profile: liveProfile || {} }),
+        body: JSON.stringify({
+          question,
+          format,
+          profile: liveProfile || {},
+          sessionId: liveSessionId || undefined,
+        }),
         signal: activeController.signal,
       });
     } catch (e) {
@@ -261,6 +295,21 @@
 
   function renderError(msg) { return `<p class="error-block">${msg}</p>`; }
   function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+  // honor ?question= from question bank — auto-go-live and ask
+  const seedQ = new URLSearchParams(location.search).get('question');
+  if (seedQ) {
+    setTimeout(async () => {
+      await goLive();
+      const t = document.getElementById('transcript');
+      const p = document.createElement('p');
+      p.className = 't-line';
+      p.innerHTML = `<b>Interviewer:</b> ${escapeHtml(seedQ)}`;
+      t.appendChild(p);
+      t.scrollTop = t.scrollHeight;
+      askAiyedrix(seedQ, currentMode);
+    }, 100);
+  }
 
   // honor ?mode= from dashboard tiles
   const params = new URLSearchParams(location.search);

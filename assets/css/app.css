@@ -456,3 +456,60 @@ body.auth-page {
   background: var(--grad); color: #0a0a12;
 }
 
+/* ---------- question bank ---------- */
+.qbank-grid { display: grid; gap: 1rem; grid-template-columns: 1fr 1.5fr; align-items: start; }
+@media (max-width: 1000px) { .qbank-grid { grid-template-columns: 1fr; } }
+.qbank-grid .q-list { max-height: 70vh; overflow-y: auto; }
+.q-list li { transition: background .12s ease, border-color .12s ease; }
+.q-list li.active { background: rgba(124,92,255,.14); border-color: rgba(124,92,255,.45); }
+.q-detail { position: sticky; top: 4.5rem; max-height: calc(100vh - 6rem); overflow-y: auto; }
+.q-detail .q-title { margin: .35rem 0 .25rem; font-size: 1.2rem; }
+.answer-md h3 { margin: 1rem 0 .35rem; font-size: 1rem; }
+.answer-md h4 { margin: .8rem 0 .25rem; font-size: .92rem; color: var(--text-2); }
+.answer-md ul { padding-left: 1.2rem; color: var(--text-2); }
+.answer-md ul li { margin: .25rem 0; }
+.answer-md p { margin: .35rem 0; }
+.answer-md code {
+  font-family: 'JetBrains Mono', monospace; font-size: .9em;
+  background: rgba(255,255,255,.07); padding: .05rem .35rem; border-radius: 4px;
+}
+.answer-md pre {
+  background: #0a0a12; border: 1px solid var(--line); border-radius: 10px;
+  padding: .7rem .9rem; overflow-x: auto;
+}
+.answer-md pre code {
+  background: transparent; padding: 0; color: #c4b5fd;
+}
+
+/* ---------- AI quality options (settings) ---------- */
+.ai-options { display: grid; gap: .6rem; margin-top: .6rem; }
+.ai-option {
+  display: flex; align-items: center; gap: .8rem;
+  padding: .8rem 1rem; border-radius: 12px;
+  border: 1px solid var(--line); background: rgba(255,255,255,.03);
+  cursor: pointer; transition: background .12s, border-color .12s;
+}
+.ai-option:hover { background: rgba(255,255,255,.06); }
+.ai-option.selected { border-color: rgba(124,92,255,.6); background: rgba(124,92,255,.10); }
+.ai-option input[type="radio"] { width: 18px; height: 18px; accent-color: #7c5cff; }
+.ai-option b { display: block; }
+.ai-option small { font-family: 'JetBrains Mono', monospace; font-size: .78rem; }
+
+/* ---------- event stream (reports detail) ---------- */
+.event-stream { display: flex; flex-direction: column; gap: .55rem; margin-top: 1rem; }
+.ev {
+  padding: .65rem .85rem; border-radius: 10px;
+  border: 1px solid var(--line); background: rgba(255,255,255,.03);
+}
+.ev-head { display: flex; align-items: baseline; gap: .55rem; margin-bottom: .25rem; }
+.ev p { margin: .25rem 0; }
+.ev-interviewer { border-left: 3px solid var(--text-2); }
+.ev-you         { border-left: 3px solid var(--brand-2); }
+.ev-aiy         {
+  border-left: 3px solid var(--brand);
+  background: linear-gradient(180deg, rgba(124,92,255,.10), rgba(34,211,238,.04));
+}
+.ev-system      { border-left: 3px solid var(--muted); color: var(--text-2); }
+.ev ul { padding-left: 1.1rem; color: var(--text-2); margin: .25rem 0; }
+.ev ul li { margin: .15rem 0; }
+

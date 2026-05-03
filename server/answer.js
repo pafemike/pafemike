@@ -1,8 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { db } from './db.js';
 import { requireAuth } from './auth.js';
+import { modelIdForUser } from './settings.js';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6';
 
 if (!ANTHROPIC_API_KEY) {
   console.warn('WARN: ANTHROPIC_API_KEY not set — /api/answer will return 503 until you add it to .env');
@@ -51,18 +52,32 @@ function buildSystem(profile) {
 }
 
 const FORMATS = {
-  short: 'Format: SHORT — one or two sentences, no preamble. Just the spoken answer.',
-  full: 'Format: FULL — a short headline, a structured paragraph (STAR if behavioral), then one short speaking tip.',
+  short:   'Format: SHORT — one or two sentences, no preamble. Just the spoken answer.',
+  full:    'Format: FULL — a short headline, a structured paragraph (STAR if behavioral), then one short speaking tip.',
   bullets: 'Format: BULLETS — 3-5 punchy bullets, no preamble.',
 };
+
+const MAX_TOKENS_FOR = { short: 200, full: 1024, bullets: 600 };
+
+const insertEvent = db.prepare(
+  'INSERT INTO session_events (session_id, role, format, text) VALUES (?, ?, ?, ?)'
+);
+const ownsSession = db.prepare('SELECT id FROM sessions WHERE id = ? AND user_id = ?');
 
 export function registerAnswerRoute(app) {
   app.post('/api/answer', requireAuth, async (req, res) => {
     if (!client) return res.status(503).json({ error: 'ANTHROPIC_API_KEY not configured on the server' });
 
-    const { question, format = 'full', profile = {} } = req.body || {};
+    const { question, format = 'full', profile = {}, sessionId } = req.body || {};
     if (!question || typeof question !== 'string') {
       return res.status(400).json({ error: 'question is required' });
+    }
+
+    let scopedSessionId = null;
+    if (sessionId != null) {
+      const owned = ownsSession.get(Number(sessionId), req.user.id);
+      if (!owned) return res.status(400).json({ error: 'session not found' });
+      scopedSessionId = owned.id;
     }
 
     const fmt = FORMATS[format] || FORMATS.full;
@@ -80,23 +95,32 @@ export function registerAnswerRoute(app) {
     };
 
     let aborted = false;
+    let collected = '';
     req.on('close', () => { aborted = true; });
+
+    if (scopedSessionId) {
+      try { insertEvent.run(scopedSessionId, 'interviewer', null, question.trim()); } catch {}
+    }
 
     try {
       const stream = client.messages.stream({
-        model: MODEL,
-        max_tokens: 1024,
+        model: modelIdForUser(req.user),
+        max_tokens: MAX_TOKENS_FOR[format] || MAX_TOKENS_FOR.full,
         system: buildSystem(profile),
         messages: [{ role: 'user', content: userText }],
       });
 
       stream.on('text', (delta) => {
         if (aborted) return;
+        collected += delta;
         send('delta', { text: delta });
       });
 
       const final = await stream.finalMessage();
       if (!aborted) {
+        if (scopedSessionId && collected) {
+          try { insertEvent.run(scopedSessionId, 'aiyedrix', format, collected); } catch {}
+        }
         send('done', {
           stop_reason: final.stop_reason,
           usage: final.usage,

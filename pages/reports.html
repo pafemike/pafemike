@@ -22,56 +22,138 @@
 
       <div class="content">
         <section class="welcome">
-          <div><h1>Interview Reports</h1><p class="muted">Every session, scored and summarized.</p></div>
+          <div><h1>Interview Reports</h1><p class="muted">Every Copilot session you've run, with the full transcript and AI suggestions saved.</p></div>
         </section>
 
-        <section class="row">
-          <article class="card panel wide">
-            <header class="panel-head"><h3>Backend Mock · Stripe</h3><span class="score good">8.6</span></header>
-            <p class="muted">Yesterday · 42 min · 5 questions</p>
-            <div class="bars">
-              <div><span>Communication</span><div class="bar good"><i style="width:88%"></i></div></div>
-              <div><span>Technical depth</span><div class="bar good"><i style="width:84%"></i></div></div>
-              <div><span>Quantifying impact</span><div class="bar warn"><i style="width:62%"></i></div></div>
-              <div><span>Structure (STAR)</span><div class="bar good"><i style="width:90%"></i></div></div>
-            </div>
-            <footer class="panel-foot">
-              <button class="btn btn-ghost btn-sm">Replay session</button>
-              <button class="btn btn-primary btn-sm">Open study plan</button>
-            </footer>
-          </article>
-
-          <article class="card panel">
-            <header class="panel-head"><h3>Top wins</h3></header>
-            <ul class="bul">
-              <li>Strong STAR structure on the leadership question.</li>
-              <li>Clean trade-off discussion on idempotency.</li>
-              <li>Confident pacing throughout.</li>
-            </ul>
-          </article>
-
-          <article class="card panel">
-            <header class="panel-head"><h3>Work on</h3></header>
-            <ul class="bul">
-              <li>Add concrete metrics to <i>every</i> impact claim.</li>
-              <li>Cut filler ("kind of", "you know") — 14 instances.</li>
-              <li>Tighten system design intro to 90 seconds.</li>
-            </ul>
-          </article>
-        </section>
-
-        <section class="card panel">
-          <header class="panel-head"><h3>All sessions</h3></header>
-          <ul class="session-list">
-            <li><span class="dot good"></span><div><b>Backend Mock · Stripe</b><small class="muted">Mock · 42 min · Yesterday</small></div><span class="score good">8.6</span></li>
-            <li><span class="dot warn"></span><div><b>PM Copilot · Meta</b><small class="muted">Copilot · 31 min · 3 days ago</small></div><span class="score warn">7.1</span></li>
-            <li><span class="dot good"></span><div><b>System Design · Google</b><small class="muted">Mock · 55 min · Last week</small></div><span class="score good">8.9</span></li>
-            <li><span class="dot bad"></span><div><b>Coding · OpenAI</b><small class="muted">Copilot · 38 min · 2 weeks ago</small></div><span class="score bad">5.9</span></li>
-          </ul>
-        </section>
+        <div id="reportsBody"><p class="muted">Loading…</p></div>
       </div>
     </main>
   </div>
+
   <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/aiyedrix-api.js"></script>
+  <script>
+    const body = document.getElementById('reportsBody');
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+    function fmtDate(s) {
+      if (!s) return '—';
+      const d = new Date(s.replace(' ', 'T') + 'Z');
+      if (isNaN(d)) return s;
+      return d.toLocaleString();
+    }
+    function fmtDuration(s) {
+      if (!s) return '—';
+      if (s < 60) return s + 's';
+      if (s < 3600) return Math.round(s / 60) + ' min';
+      return (s / 3600).toFixed(1) + ' h';
+    }
+
+    function renderMarkdown(md) {
+      const lines = String(md || '').split('\n');
+      const out = [];
+      let inList = false;
+      for (const raw of lines) {
+        const t = raw.trim();
+        if (/^[-*] /.test(t)) {
+          if (!inList) { out.push('<ul>'); inList = true; }
+          out.push(`<li>${inline(t.replace(/^[-*]\s+/, ''))}</li>`);
+        } else {
+          if (inList) { out.push('</ul>'); inList = false; }
+          if (t === '') out.push('');
+          else out.push(`<p>${inline(t)}</p>`);
+        }
+      }
+      if (inList) out.push('</ul>');
+      return out.join('\n');
+    }
+    function inline(s) {
+      return escapeHtml(s)
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+        .replace(/\*([^*]+)\*/g, '<i>$1</i>');
+    }
+
+    async function load() {
+      body.innerHTML = '<p class="muted">Loading…</p>';
+      try {
+        const sessions = await window.aiyedrix.sessions.list();
+        if (sessions.length === 0) {
+          body.innerHTML = `
+            <div class="card panel" style="text-align:center; padding:2rem;">
+              <h3>No sessions yet</h3>
+              <p class="muted">Run your first AI Copilot session and it'll show up here — transcript, AI answers, and a replay.</p>
+              <a class="btn btn-primary" href="copilot.html">+ Start a Copilot session</a>
+            </div>`;
+          return;
+        }
+
+        body.innerHTML = `<section class="card panel"><header class="panel-head"><h3>All sessions</h3><span class="muted small">${sessions.length} total</span></header><ul class="session-list" id="sessList"></ul></section>`;
+        const ul = document.getElementById('sessList');
+        ul.innerHTML = sessions.map((s) => {
+          const dotClass = s.score >= 8 ? 'good' : s.score >= 6.5 ? 'warn' : s.score != null ? 'bad' : '';
+          const scoreClass = s.score >= 8 ? 'good' : s.score >= 6.5 ? 'warn' : s.score != null ? 'bad' : '';
+          const sub = [s.kind, fmtDuration(s.durationSeconds), fmtDate(s.createdAt)].filter(Boolean).join(' · ');
+          return `
+            <li data-id="${s.id}">
+              <span class="dot ${dotClass}"></span>
+              <div>
+                <b>${escapeHtml(s.title)}</b>
+                <small class="muted">${escapeHtml(sub)}</small>
+              </div>
+              ${s.score != null ? `<span class="score ${scoreClass}">${s.score.toFixed(1)}</span>` : `<span class="badge">${escapeHtml(s.status)}</span>`}
+            </li>`;
+        }).join('');
+        ul.querySelectorAll('li[data-id]').forEach((li) => {
+          li.addEventListener('click', () => openSession(Number(li.dataset.id)));
+        });
+      } catch (e) {
+        if (e.status === 401) { location.href = 'login.html'; return; }
+        body.innerHTML = `<p class="error-block">${escapeHtml(e.message)}</p>`;
+      }
+    }
+
+    async function openSession(id) {
+      try {
+        const s = await window.aiyedrix.sessions.get(id);
+        const evHtml = (s.events || []).map((e) => {
+          const cls = ({ interviewer: 'ev-interviewer', you: 'ev-you', aiyedrix: 'ev-aiy', system: 'ev-system' }[e.role]) || '';
+          const label = ({ interviewer: 'Interviewer', you: 'You', aiyedrix: 'Aiyedrix', system: 'System' }[e.role]) || e.role;
+          const inner = e.role === 'aiyedrix' ? renderMarkdown(e.text) : `<p>${inline(e.text)}</p>`;
+          return `<div class="ev ${cls}"><div class="ev-head"><b>${label}</b><small class="muted">${fmtDate(e.createdAt)}</small></div>${inner}</div>`;
+        }).join('') || '<p class="muted small">No events recorded.</p>';
+
+        body.innerHTML = `
+          <button class="btn btn-ghost btn-sm" id="backBtn">← All reports</button>
+          <section class="card panel" style="margin-top:1rem;">
+            <header class="panel-head">
+              <div>
+                <h2 class="q-title">${escapeHtml(s.title)}</h2>
+                <small class="muted">${escapeHtml(s.kind)} · ${fmtDuration(s.durationSeconds)} · ${fmtDate(s.createdAt)} · ${s.status}</small>
+              </div>
+              ${s.score != null ? `<span class="score ${s.score >= 8 ? 'good' : s.score >= 6.5 ? 'warn' : 'bad'}">${s.score.toFixed(1)}</span>` : ''}
+            </header>
+            ${s.profileTitle ? `<p class="muted">Profile: <b>${escapeHtml(s.profileTitle)}</b></p>` : ''}
+            <div class="event-stream">${evHtml}</div>
+            <footer class="panel-foot">
+              <button class="btn btn-ghost btn-sm danger" id="delBtn">Delete</button>
+            </footer>
+          </section>`;
+        document.getElementById('backBtn').addEventListener('click', load);
+        document.getElementById('delBtn').addEventListener('click', async () => {
+          if (!confirm('Delete this session and its full transcript? This cannot be undone.')) return;
+          await window.aiyedrix.sessions.delete(id);
+          load();
+        });
+      } catch (e) {
+        if (e.status === 401) { location.href = 'login.html'; return; }
+        body.innerHTML = `<p class="error-block">${escapeHtml(e.message)}</p>`;
+      }
+    }
+
+    load();
+  </script>
 </body>
 </html>

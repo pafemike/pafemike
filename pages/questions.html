@@ -19,7 +19,7 @@
         </button>
         <div class="crumbs"><a href="../app.html">Home</a><span> / </span><span>Question Bank</span></div>
         <div class="topbar-right">
-          <input type="search" placeholder="Search 10,000+ questions…" class="search" id="qSearch" />
+          <input type="search" placeholder="Search questions…" class="search" id="qSearch" />
         </div>
       </header>
 
@@ -27,46 +27,172 @@
         <section class="welcome">
           <div>
             <h1>Question Bank</h1>
-            <p class="muted">Filter by company, role, and category. Open any question for a model answer.</p>
+            <p class="muted">Curated questions with hand-written model answers. Click any to read the full answer — no API credits used. Tap "Practice with Copilot" to ask Aiyedrix to personalize one for you.</p>
           </div>
         </section>
 
-        <div class="chips">
+        <div class="chips" id="catChips">
           <button class="chip active" data-filter="all">All</button>
           <button class="chip" data-filter="behavioral">Behavioral</button>
           <button class="chip" data-filter="coding">Coding</button>
-          <button class="chip" data-filter="system">System design</button>
-          <button class="chip" data-filter="pm">Product</button>
+          <button class="chip" data-filter="system">System Design</button>
+          <button class="chip" data-filter="product">Product</button>
           <button class="chip" data-filter="data">Data &amp; ML</button>
+          <button class="chip" data-filter="specialized">Specialized</button>
         </div>
 
-        <ul class="q-list" id="qList">
-          <li data-cat="behavioral" data-co="Stripe"><span class="tag">Behavioral</span><b>Tell me about a time you led a project under tight deadlines.</b><small class="muted">Stripe · L5</small></li>
-          <li data-cat="coding" data-co="Meta"><span class="tag tag-c">Coding</span><b>Two-Sum on a streaming source.</b><small class="muted">Meta · E5</small></li>
-          <li data-cat="system" data-co="Google"><span class="tag tag-s">System</span><b>Design a URL shortener that handles 10B writes/day.</b><small class="muted">Google · L5</small></li>
-          <li data-cat="behavioral" data-co="Amazon"><span class="tag">Behavioral</span><b>Describe a time you disagreed with your manager.</b><small class="muted">Amazon · L6 · LP: Have Backbone</small></li>
-          <li data-cat="pm" data-co="Meta"><span class="tag tag-p">Product</span><b>Design a feature to grow Reels engagement by 5%.</b><small class="muted">Meta · IC5</small></li>
-          <li data-cat="data" data-co="Stripe"><span class="tag tag-d">Data</span><b>Detect payment fraud on a sparse, imbalanced dataset.</b><small class="muted">Stripe · ML L5</small></li>
-          <li data-cat="coding" data-co="OpenAI"><span class="tag tag-c">Coding</span><b>LRU cache with O(1) get/put.</b><small class="muted">OpenAI · MTS</small></li>
-          <li data-cat="system" data-co="Stripe"><span class="tag tag-s">System</span><b>Design idempotent payment intents at scale.</b><small class="muted">Stripe · L5</small></li>
-        </ul>
+        <div class="qbank-grid">
+          <ul class="q-list" id="qList"><li class="muted">Loading…</li></ul>
+          <article class="card panel q-detail" id="qDetail">
+            <div class="muted small">Pick a question on the left to read the model answer.</div>
+          </article>
+        </div>
       </div>
     </main>
   </div>
+
   <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/profiles-api.js"></script>
+  <script src="../assets/js/aiyedrix-api.js"></script>
   <script>
-    const chips = document.querySelectorAll('.chip');
-    const items = document.querySelectorAll('#qList li');
-    chips.forEach(c => c.addEventListener('click', () => {
-      chips.forEach(x => x.classList.remove('active'));
+    const list = document.getElementById('qList');
+    const detail = document.getElementById('qDetail');
+    const chips = document.querySelectorAll('#catChips .chip');
+    const search = document.getElementById('qSearch');
+
+    let allQuestions = [];
+    let currentCat = 'all';
+    let currentSearch = '';
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    function tagClass(cat) {
+      return ({ behavioral: '', coding: 'tag-c', system: 'tag-s', product: 'tag-p', data: 'tag-d', specialized: '' }[cat]) || '';
+    }
+
+    function row(q) {
+      const sub = [q.company, q.level, q.framework].filter(Boolean).join(' · ');
+      return `
+        <li data-id="${q.id}">
+          <span class="tag ${tagClass(q.category)}">${escapeHtml(q.category)}</span>
+          <b>${escapeHtml(q.title)}</b>
+          <small class="muted">${escapeHtml(sub || '—')}</small>
+        </li>`;
+    }
+
+    function applyFilters() {
+      const filtered = allQuestions.filter((q) => {
+        if (currentCat !== 'all' && q.category !== currentCat) return false;
+        if (currentSearch) {
+          const hay = (q.title + ' ' + (q.tags || []).join(' ') + ' ' + (q.framework || '')).toLowerCase();
+          if (!hay.includes(currentSearch)) return false;
+        }
+        return true;
+      });
+      if (filtered.length === 0) {
+        list.innerHTML = '<li class="muted">No questions match.</li>';
+      } else {
+        list.innerHTML = filtered.map(row).join('');
+        list.querySelectorAll('li[data-id]').forEach((el) => {
+          el.addEventListener('click', () => openQuestion(Number(el.dataset.id), el));
+        });
+      }
+    }
+
+    async function openQuestion(id, el) {
+      list.querySelectorAll('li').forEach((x) => x.classList.remove('active'));
+      el?.classList.add('active');
+
+      detail.innerHTML = '<div class="muted small">Loading…</div>';
+      try {
+        const q = await window.aiyedrix.questions.get(id);
+        window.aiyedrix.questions.bumpView(id);
+        const meta = [q.company, q.level, q.framework].filter(Boolean).join(' · ');
+        const tagsHtml = (q.tags || []).map((t) => `<li>${escapeHtml(t)}</li>`).join('');
+        detail.innerHTML = `
+          <header class="panel-head">
+            <div>
+              <span class="tag ${tagClass(q.category)}">${escapeHtml(q.category)}</span>
+              <h2 class="q-title">${escapeHtml(q.title)}</h2>
+              ${meta ? `<small class="muted">${escapeHtml(meta)}</small>` : ''}
+            </div>
+          </header>
+          ${tagsHtml ? `<ul class="tags">${tagsHtml}</ul>` : ''}
+          <div class="answer answer-md">${renderMarkdown(q.answerMd)}</div>
+          ${q.speakerNote ? `<p class="muted small"><b>Speaker tip.</b> ${escapeHtml(q.speakerNote)}</p>` : ''}
+          <footer class="panel-foot">
+            <button class="btn btn-primary btn-sm" id="practiceBtn">Practice with Copilot →</button>
+            <button class="btn btn-ghost btn-sm" id="copyBtn">⧉ Copy answer</button>
+          </footer>`;
+
+        document.getElementById('practiceBtn').addEventListener('click', () => {
+          location.href = 'copilot.html?question=' + encodeURIComponent(q.title);
+        });
+        document.getElementById('copyBtn').addEventListener('click', async () => {
+          try { await navigator.clipboard.writeText(q.answerMd); } catch {}
+        });
+      } catch (e) {
+        detail.innerHTML = `<p class="error-block">${escapeHtml(e.message)}</p>`;
+      }
+    }
+
+    function renderMarkdown(md) {
+      // Tiny markdown subset: headings (##), bold **x**, italics *x*, inline `code`, lists (- or *), code blocks (```)
+      const lines = String(md || '').split('\n');
+      const out = [];
+      let inList = false, inCode = false;
+      for (const raw of lines) {
+        if (/^```/.test(raw)) {
+          if (inList) { out.push('</ul>'); inList = false; }
+          if (!inCode) { out.push('<pre><code>'); inCode = true; }
+          else { out.push('</code></pre>'); inCode = false; }
+          continue;
+        }
+        if (inCode) { out.push(escapeHtml(raw)); continue; }
+
+        const trimmed = raw.trim();
+        if (/^- /.test(trimmed) || /^\* /.test(trimmed)) {
+          if (!inList) { out.push('<ul>'); inList = true; }
+          out.push(`<li>${inline(trimmed.replace(/^[-*]\s+/, ''))}</li>`);
+        } else {
+          if (inList) { out.push('</ul>'); inList = false; }
+          if (trimmed === '') out.push('');
+          else if (/^### /.test(trimmed)) out.push(`<h4>${inline(trimmed.slice(4))}</h4>`);
+          else if (/^## /.test(trimmed)) out.push(`<h3>${inline(trimmed.slice(3))}</h3>`);
+          else if (/^# /.test(trimmed)) out.push(`<h3>${inline(trimmed.slice(2))}</h3>`);
+          else out.push(`<p>${inline(trimmed)}</p>`);
+        }
+      }
+      if (inList) out.push('</ul>');
+      if (inCode) out.push('</code></pre>');
+      return out.join('\n');
+    }
+    function inline(s) {
+      return escapeHtml(s)
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+        .replace(/\*([^*]+)\*/g, '<i>$1</i>');
+    }
+
+    chips.forEach((c) => c.addEventListener('click', () => {
+      chips.forEach((x) => x.classList.remove('active'));
       c.classList.add('active');
-      const f = c.dataset.filter;
-      items.forEach(i => i.style.display = (f === 'all' || i.dataset.cat === f) ? '' : 'none');
+      currentCat = c.dataset.filter;
+      applyFilters();
     }));
-    document.getElementById('qSearch').addEventListener('input', e => {
-      const q = e.target.value.toLowerCase();
-      items.forEach(i => i.style.display = i.textContent.toLowerCase().includes(q) ? '' : 'none');
-    });
+    search.addEventListener('input', (e) => { currentSearch = e.target.value.toLowerCase().trim(); applyFilters(); });
+
+    (async () => {
+      try {
+        allQuestions = await window.aiyedrix.questions.list();
+      } catch (e) {
+        list.innerHTML = `<li class="error-block">${escapeHtml(e.message)}</li>`;
+        return;
+      }
+      applyFilters();
+    })();
   </script>
 </body>
 </html>

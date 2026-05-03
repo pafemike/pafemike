@@ -8,6 +8,9 @@ import './db.js';
 import { registerAuthRoutes } from './auth.js';
 import { registerAnswerRoute } from './answer.js';
 import { registerProfileRoutes } from './profiles.js';
+import { registerSessionRoutes } from './sessions.js';
+import { registerQuestionRoutes } from './questions.js';
+import { registerSettingsRoutes } from './settings.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -22,6 +25,9 @@ app.use(cookieParser());
 registerAuthRoutes(app);
 registerAnswerRoute(app);
 registerProfileRoutes(app);
+registerSessionRoutes(app);
+registerQuestionRoutes(app);
+registerSettingsRoutes(app);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

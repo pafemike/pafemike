@@ -22,38 +22,96 @@
 
       <div class="content">
         <section class="welcome">
-          <div><h1>Settings</h1><p class="muted">Account, audio, billing, and privacy.</p></div>
+          <div><h1>Settings</h1><p class="muted">Account, AI quality, and audio.</p></div>
+        </section>
+
+        <section class="card panel" id="aiCard">
+          <header class="panel-head"><h3>AI quality</h3><span class="muted small" id="aiStatus"></span></header>
+          <p class="muted">Higher quality means smarter answers but more API spend per question. Haiku is roughly 5× cheaper than Sonnet, and Opus is ~2× more expensive than Sonnet.</p>
+          <div class="ai-options" id="aiOptions"><p class="muted small">Loading…</p></div>
         </section>
 
         <section class="card panel">
           <header class="panel-head"><h3>Account</h3></header>
-          <div class="form-grid">
-            <label class="field"><span>Name</span><input type="text" value="Peter Aiyede"/></label>
-            <label class="field"><span>Email</span><input type="email" value="peter@aiyedrix.com"/></label>
-            <label class="field"><span>Plan</span><input type="text" value="Free" disabled/></label>
-            <label class="field"><span>Default language</span>
-              <select><option>English (US)</option><option>English (UK)</option><option>French</option></select>
-            </label>
-          </div>
+          <ul class="kv" id="accountKV"><li class="muted">Loading…</li></ul>
         </section>
 
         <section class="card panel">
-          <header class="panel-head"><h3>Audio</h3></header>
+          <header class="panel-head"><h3>Audio (local — not synced)</h3></header>
           <div class="form-grid">
-            <label class="field"><span>Microphone</span><select><option>MacBook Pro Microphone</option></select></label>
-            <label class="field"><span>System audio</span><select><option>BlackHole 2ch</option></select></label>
+            <label class="field"><span>Microphone</span><select><option>System default</option></select></label>
+            <label class="field"><span>System audio</span><select><option>Loopback (recommended)</option></select></label>
           </div>
         </section>
 
         <section class="card panel">
           <header class="panel-head"><h3>Privacy</h3></header>
           <label class="field full toggle"><input type="checkbox" checked/><span>Stealth mode by default</span></label>
-          <label class="field full toggle"><input type="checkbox"/><span>Save transcripts to Reports</span></label>
-          <label class="field full toggle"><input type="checkbox"/><span>Allow product analytics</span></label>
+          <label class="field full toggle"><input type="checkbox" checked/><span>Save transcripts to Reports</span></label>
         </section>
       </div>
     </main>
   </div>
+
   <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/aiyedrix-api.js"></script>
+  <script>
+    const aiOptions = document.getElementById('aiOptions');
+    const aiStatus = document.getElementById('aiStatus');
+    const accountKV = document.getElementById('accountKV');
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    async function loadSettings() {
+      try {
+        const s = await window.aiyedrix.settings.get();
+        aiOptions.innerHTML = s.availableModels.map((m) => `
+          <label class="ai-option ${m.key === s.modelPreference ? 'selected' : ''}">
+            <input type="radio" name="ai" value="${m.key}" ${m.key === s.modelPreference ? 'checked' : ''} />
+            <div>
+              <b>${escapeHtml(m.label)}</b>
+              <small class="muted">${escapeHtml(m.modelId)}</small>
+            </div>
+          </label>`).join('');
+        aiStatus.textContent = `Currently: ${s.modelPreference}`;
+        document.querySelectorAll('input[name="ai"]').forEach((input) =>
+          input.addEventListener('change', async () => {
+            aiStatus.textContent = 'Saving…';
+            try {
+              const r = await window.aiyedrix.settings.patch({ modelPreference: input.value });
+              aiStatus.textContent = `Saved · ${r.modelPreference}`;
+              document.querySelectorAll('.ai-option').forEach((el) => el.classList.remove('selected'));
+              input.closest('.ai-option').classList.add('selected');
+              setTimeout(() => { aiStatus.textContent = `Currently: ${r.modelPreference}`; }, 1200);
+            } catch (e) {
+              aiStatus.textContent = e.message;
+            }
+          })
+        );
+      } catch (e) {
+        if (e.status === 401) { location.href = 'login.html'; return; }
+        aiOptions.innerHTML = `<p class="error-block">${escapeHtml(e.message)}</p>`;
+      }
+    }
+
+    async function loadAccount() {
+      try {
+        const r = await fetch('/api/auth/me', { credentials: 'same-origin' });
+        if (!r.ok) throw new Error('Not signed in');
+        const { user } = await r.json();
+        accountKV.innerHTML = `
+          <li><span>Name</span><b>${escapeHtml(user.name)}</b></li>
+          <li><span>Email</span><b>${escapeHtml(user.email)}</b></li>
+          <li><span>Member since</span><b>${escapeHtml(user.createdAt)}</b></li>`;
+      } catch (e) {
+        accountKV.innerHTML = `<li class="muted">${escapeHtml(e.message)}</li>`;
+      }
+    }
+
+    loadSettings();
+    loadAccount();
+  </script>
 </body>
 </html>
