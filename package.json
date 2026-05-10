@@ -5,6 +5,9 @@
   "description": "Aiyedrix — AI Interview Copilot (self-hosted)",
   "type": "module",
   "main": "server/server.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node server/server.js",
     "dev": "node --watch server/server.js"

@@ -1,0 +1,37 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+#
+# Deploy with: connect this repo on Render, choose "Blueprint", select
+# the branch, then click Apply. Render reads this file and provisions
+# the web service + disk automatically.
+#
+# Cost: ~$7/mo Starter plan + ~$0.25/mo for the 1GB disk = ~$7.25/mo.
+# Required for SQLite to persist across deploys. The free tier has
+# no persistent disk, so the database would be wiped on every redeploy
+# and every cold-start.
+
+services:
+  - type: web
+    name: aiyedrix
+    runtime: node
+    plan: starter
+    region: oregon            # change to frankfurt / singapore / ohio if you prefer
+    branch: main              # change to claude/create-aiyedrix-copilot-OA84a if deploying that branch
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: /var/data/aiyedrix.db
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-4-6
+      - key: JWT_SECRET
+        generateValue: true   # Render generates a strong random value once and keeps it
+      - key: ANTHROPIC_API_KEY
+        sync: false           # YOU set this in the Render dashboard after first deploy
+    disk:
+      name: aiyedrix-data
+      mountPath: /var/data
+      sizeGB: 1
